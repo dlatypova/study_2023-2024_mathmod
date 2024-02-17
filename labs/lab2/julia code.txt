@@ -1,0 +1,56 @@
+using Plots
+using DifferentialEquations
+
+# Расстояние от лодки до катера
+const distance_to_kater = 16.5
+const ratio = 4.3
+
+# Расстояние начала спирали для движения катера впереди лодки и позади лодки
+const r0_forward = distance_to_kater / (ratio + 1)
+const r0_backward = distance_to_kater / (ratio - 1)
+
+# Интервал для времени
+const T = (0, 2*pi)         # Для движения катера впереди лодки
+const T_backward = (-pi, pi)  # Для движения катера позади лодки
+
+# Определение функции для уравнений движения
+function F(u, p, t)
+    return u / sqrt(ratio * ratio - 1)
+end
+
+# 1 случай: Катер впереди лодки
+problem = ODEProblem(F, r0_forward, T)
+result = solve(problem, abstol=1e-8, reltol=1e-8)
+random_index = rand(1:size(result.t)[1])  # Выбираем случайный индекс для отображения
+rAngles = [result.t[random_index] for i in 1:size(result.t)[1]]  # Углы
+
+# Создание графика для случая 1
+plt = plot(proj=:polar, aspect_ratio=:equal, dpi=1000, legend=true, bg=:white)
+
+# Настройка параметров графика
+plot!(plt, xlabel="theta", ylabel="r(t)", title="Задача о погоне. 1 случай", legend=:outerbottom)
+plot!(plt, [rAngles[1], rAngles[2]], [0.0, result.u[size(result.u)[1]]], label="Путь лодки", color=:black, lw=1)
+scatter!(plt, rAngles, result.u, label="", mc=:black, ms=0.0005)
+plot!(plt, result.t, result.u, xlabel="theta", ylabel="r(t)", label="Путь катера", color=:purple, lw=1)
+scatter!(plt, result.t, result.u, label="", mc=:purple, ms=0.0005)
+
+savefig(plt, "lab2_1.png")
+
+# 2 случай: Катер позади лодки
+problem = ODEProblem(F, r0_backward, T_backward)
+result = solve(problem, abstol=1e-8, reltol=1e-8)
+random_index = rand(1:size(result.t)[1])  # Выбираем случайный индекс для отображения
+rAngles = [result.t[random_index] for i in 1:size(result.t)[1]]  # Углы
+
+# Создание графика для случая 2
+plt1 = plot(proj=:polar, aspect_ratio=:equal, dpi=1000, legend=true, bg=:white)
+
+# Настройка параметров графика
+plot!(plt1, xlabel="theta", ylabel="r(t)", title="Задача о погоне. 2 случай", legend=:outerbottom)
+plot!(plt1, [rAngles[1], rAngles[2]], [0.0, result.u[size(result.u)[1]]], label="Путь лодки", color=:black, lw=1)
+scatter!(plt1, rAngles, result.u, label="", mc=:black, ms=0.0005)
+plot!(plt1, result.t, result.u, xlabel="theta", ylabel="r(t)", label="Путь катера", color=:purple, lw=1)
+scatter!(plt1, result.t, result.u, label="", mc=:purple, ms=0.0005)
+
+savefig(plt1, "lab2_2.png")
+
