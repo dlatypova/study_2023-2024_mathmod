@@ -1,0 +1,105 @@
+# Необходимые модули
+using Plots
+using DifferentialEquations
+
+# Начальная численность армий
+const initial_x = 33333
+const initial_y = 44444
+initial_point = [initial_x, initial_y]
+# Определяем временной интервал
+time_interval = [0.0, 5.0] 
+
+# Константы для первой модели
+a1 = 0.15
+b1 = 0.64
+c1 = 0.55
+h1 = 0.12
+# Константы для второй модели
+a2 = 0.28
+b2 = 0.745
+c2 = 0.613
+h2 = 0.35
+
+# Функции, описывающие возможность подкрепления
+# Для первой модели
+function reinforcement_x1(t)
+    return abs(sin(t+15))
+end
+
+function reinforcement_y1(t)
+    return abs(cos(t+25))
+end
+
+# Для второй модели
+function reinforcement_x2(t)
+    return abs(2*sin(3t))
+end
+
+function reinforcement_y2(t)
+    return abs(1.5*cos(2t))
+end
+
+# Система уравнений для первой модели
+function model1!(dp, point, p, t)
+    dp[1] = -a1*point[1] - b1*point[2] + reinforcement_x1(t)
+    dp[2] = -c1*point[1] - h1*point[2] + reinforcement_y1(t)
+end
+
+# Система уравнений для второй модели
+function model2!(dp, point, p, t)
+    dp[1] = -a2*point[1] - b2*point[2] + reinforcement_x2(t)
+    dp[2] = -c2*point[1]*point[2] - h2*point[2] + reinforcement_y2(t)
+end
+
+# Создаем массив времени для отслеживания изменений
+t = collect(LinRange(0, 1, 100))
+
+# Решаем уравнения для первой модели
+problem1 = ODEProblem(model1!, initial_point, time_interval)
+solution1 = solve(problem1, saveat=t)
+
+# Решаем уравнения для второй модели
+problem2 = ODEProblem(model2!, initial_point, time_interval)
+solution2 = solve(problem2, saveat=t)
+
+# Построение графиков
+# Первая модель
+plot1 = plot(
+    solution1, 
+    vars=(0, 1), 
+    color=:red,
+    label="Army X",
+    title="Model 1",
+    xlabel="Time",
+    ylabel="Number of Troops"
+)
+
+plot!(
+    solution1,
+    vars=(0, 2),
+    color=:blue,
+    label="Army Y"
+)
+
+savefig(plot1, "model1.png")
+
+# Вторая модель
+plot2 = plot(
+    solution2, 
+    vars=(0, 1), 
+    color=:red,
+    label="Army X",
+    title="Model 2",
+    xlabel="Time",
+    ylabel="Number of Troops"
+)
+
+plot!(
+    solution2,
+    vars=(0, 2),
+    color=:blue,
+    label="Army Y"
+)
+
+savefig(plot2, "model2.png")
+
