@@ -1,0 +1,30 @@
+using DifferentialEquations
+
+# Функция, описывающая правую часть уравнения гармонического осциллятора
+function harmonic_oscillator!(du, u, p, t)
+    k = p  # Коэффициент жесткости гармонического осциллятора
+    du[1] = u[2]  # dx/dt = y
+    du[2] = -k * u[1]  # dy/dt = -kx
+end
+
+# Начальные условия: смещение и скорость
+const initial_displacement = 1.1
+const initial_velocity = 0.0
+u0 = [initial_displacement, initial_velocity]
+
+p = (8.8)  # Коэффициент жесткости гармонического осциллятора
+tspan = (0.0, 55.0)  # Временной интервал
+problem = ODEProblem(harmonic_oscillator!, u0, tspan, p)  # Определение задачи для решения ОДУ
+solution = solve(problem, dtmax=0.05)  # Решение задачи с заданным максимальным шагом по времени
+
+using Plots
+gr()
+
+# Построение решения системы уравнений (графики смещения и скорости от времени)
+plot(solution)
+savefig("julia4_1.png")  # Сохранение графика решения в файл
+
+# Построение фазового портрета (график скорости от смещения)
+plot(solution, vars=(2,1))
+savefig("julia4_1phase.png")  # Сохранение фазового портрета в файл
+
