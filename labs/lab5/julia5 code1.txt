@@ -1,0 +1,67 @@
+using Plots
+using DifferentialEquations
+
+# Начальные условия для численности жертв и хищников
+x0 = 13
+y0 = 27
+
+# Параметры модели хищник-жертва
+a = 0.25
+b = 0.05
+c = 0.6
+d = 0.061
+
+# Определение функции для системы дифференциальных уравнений
+function ode_fn(du, u, p, t)
+    x, y = u
+    du[1] = -a * u[1] + b * u[1] * u[2]  # Уравнение для изменения численности жертв
+    du[2] = c * u[2] - d * u[1] * u[2]   # Уравнение для изменения численности хищников
+end
+
+# Начальные условия и временной интервал
+v0 = [x0, y0]
+tspan = (0.0, 60.0)
+
+# Определение задачи ОДУ
+prob = ODEProblem(ode_fn, v0, tspan)
+
+# Решение задачи
+sol = solve(prob, dtmax=0.05)
+X = [u[1] for u in sol.u]  # Численность жертв
+Y = [u[2] for u in sol.u]  # Численность хищников
+T = [t for t in sol.t]     # Время
+
+# Построение графика фазового портрета
+plt = plot(
+  dpi=300,
+  legend=false)
+
+plot!(
+  plt,
+  X,
+  Y,
+  color=:blue)
+
+savefig(plt, "out/lab5_1julia.png")
+
+# Построение графиков изменения численности жертв и хищников по времени
+plt2 = plot(
+  dpi=300,
+  legend=true)
+
+plot!(
+  plt2,
+  T,
+  X,
+  label="Численность жертв",
+  color=:red)
+
+plot!(
+  plt2,
+  T,
+  Y,
+  label="Численность хищников",
+  color=:purple)
+
+savefig(plt2, "out/lab5_2julia.png")
+

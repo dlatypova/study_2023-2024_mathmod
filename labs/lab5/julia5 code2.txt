@@ -1,0 +1,56 @@
+using Plots
+using DifferentialEquations
+
+# Определение параметров модели
+a = 0.25
+b = 0.05
+c = 0.6
+d = 0.061
+
+# Вычисление начальных условий из уравнений равновесия
+x0 = c / d
+y0 = a / b
+
+# Определение функции для системы дифференциальных уравнений
+function ode_fn(du, u, p, t)
+    x, y = u
+    du[1] = -a*u[1] + b * u[1] * u[2]  # Уравнение для изменения численности жертв
+    du[2] = c * u[2] - d * u[1] * u[2]  # Уравнение для изменения численности хищников
+end
+
+# Начальные условия и временной интервал
+v0 = [x0, y0]
+tspan = (0.0, 60.0)
+
+# Определение задачи ОДУ
+prob = ODEProblem(ode_fn, v0, tspan)
+
+# Решение задачи
+sol = solve(prob, dtmax=0.05)
+
+# Извлечение результатов
+X = [u[1] for u in sol.u]
+Y = [u[2] for u in sol.u]
+T = [t for t in sol.t]
+
+# Построение графиков
+plt2 = plot(
+  dpi=300,
+  legend=true)
+
+plot!(
+  plt2,
+  T,
+  X,
+  label="Prey's count",  # Численность жертв
+  color=:red)
+
+plot!(
+  plt2,
+  T,
+  Y,
+  label="Predator's count",  # Численность хищников
+  color=:purple)
+
+savefig(plt2, "out/lab5_3julia.png")  # Сохранение графика в файл
+
