@@ -1,0 +1,75 @@
+using Random
+using Plots
+
+# Количество особей в популяции
+population_size = 100
+
+# Количество генов у каждой особи
+num_genes = 20
+
+# Вероятность мутации
+mutation_rate = 0.01
+
+# Генерация начальной популяции случайным образом
+function generate_population(population_size, num_genes)
+    return [rand(Bool, num_genes) for _ in 1:population_size]
+end
+
+# Функция вычисления приспособленности каждой особи
+function calculate_fitness(individual)
+    return sum(individual)
+end
+
+# Функция скрещивания двух особей
+function crossover(parent1, parent2)
+    crossover_point = rand(1:length(parent1))
+    child = vcat(parent1[1:crossover_point], parent2[crossover_point+1:end])
+    return child
+end
+
+# Функция мутации особи
+function mutate(individual, mutation_rate)
+    for i in 1:length(individual)
+        if rand() < mutation_rate
+            individual[i] = !individual[i]
+        end
+    end
+    return individual
+end
+
+# Генетический алгоритм для моделирования эволюции
+function genetic_algorithm(population, num_generations)
+    fitness_values = Float64[]
+    for generation in 1:num_generations
+        # Оценка приспособленности и сортировка популяции по приспособленности
+        fitness = [calculate_fitness(individual) for individual in population]
+        sorted_indices = sortperm(fitness, rev=true)
+        
+        # Отбор лучших особей для скрещивания
+        selected_parents = population[sorted_indices[1:div(length(population), 2)]]
+        
+        # Генерация новой популяции путем скрещивания и мутации
+        new_population = []
+        while length(new_population) < length(population)
+            parent1, parent2 = rand(selected_parents, 2)
+            child = crossover(parent1, parent2)
+            child = mutate(child, mutation_rate)
+            push!(new_population, child)
+        end
+        
+        population = new_population
+        push!(fitness_values, maximum(fitness))
+    end
+    return fitness_values
+end
+
+# Генерация начальной популяции
+population = generate_population(population_size, num_genes)
+
+# Запуск генетического алгоритма
+num_generations = 50
+fitness_values = genetic_algorithm(population, num_generations)
+
+# Построение графика изменения приспособленности в течение поколений
+plot(1:num_generations, fitness_values, xlabel="Поколение", ylabel="Приспособленность", label="Максимальная приспособленность", linewidth=2)
+
